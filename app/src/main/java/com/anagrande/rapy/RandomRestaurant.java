@@ -6,10 +6,15 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,14 +38,34 @@ public class RandomRestaurant extends AppCompatActivity {
 
     private Random rand;
     private RandomRestaurantView randomRestaurantView;
-
+    private EditText etLocation;
+    private String location = "San Francisco";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_random_restaurant);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        etLocation = (EditText) findViewById(R.id.etLocation);
+        etLocation.setText(location);
+        etLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etLocation.setText("");
+            }
+        });
+        etLocation.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(event.getAction() == KeyEvent.ACTION_DOWN &&
+                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER){
+                    location = etLocation.getText().toString();
+                    fetchRestaurants();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         FloatingActionButton up = (FloatingActionButton) findViewById(R.id.up);
         up.setOnClickListener(new View.OnClickListener() {
@@ -85,7 +110,7 @@ public class RandomRestaurant extends AppCompatActivity {
 
             YelpAPI yelpApi = new YelpAPI(CONSUMER_KEY, CONSUMER_SECRET, TOKEN, TOKEN_SECRET);
 
-            String data = y.searchForBusinessesByLocation("restaurants", "San Francisco");
+            String data = y.searchForBusinessesByLocation("restaurants", location);
 
             return data;
         }
