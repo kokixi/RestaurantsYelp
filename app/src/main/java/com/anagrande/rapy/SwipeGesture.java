@@ -12,7 +12,6 @@ public class SwipeGesture extends GestureDetector.SimpleOnGestureListener{
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
-        //Log.d("super", String.valueOf(super.onScroll(e1, e2, distanceX, distanceY)));
         return Math.abs(distanceX) > 15;
     }
 }
