@@ -2,14 +2,11 @@ package com.anagrande.rapy;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 
@@ -41,6 +39,13 @@ public class RandomRestaurant extends AppCompatActivity {
     private EditText etLocation;
     private String location = "San Francisco";
 
+    private GestureDetector gestureDetector;
+
+    private JSONArray jsonArray;
+    float initialX = (float) 0.0;
+    boolean updateView = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,8 +62,8 @@ public class RandomRestaurant extends AppCompatActivity {
         etLocation.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(event.getAction() == KeyEvent.ACTION_DOWN &&
-                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER){
+                if (event.getAction() == KeyEvent.ACTION_DOWN &&
+                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                     location = etLocation.getText().toString();
                     fetchRestaurants();
                     return true;
@@ -67,25 +72,42 @@ public class RandomRestaurant extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton up = (FloatingActionButton) findViewById(R.id.up);
-        up.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
-        FloatingActionButton down = (FloatingActionButton) findViewById(R.id.down);
-        down.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                fetchRestaurants();
-            }
-        });
 
         rand = new Random();
         randomRestaurantView = new RandomRestaurantView();
         randomRestaurantView.createView(findViewById(R.id.layoutText));
+
+        gestureDetector = new GestureDetector(this, new SwipeGesture());
+
+        View.OnTouchListener mGestureListener = new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (gestureDetector.onTouchEvent(event)) {
+                    updateView = true;
+                    return true;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if(updateView) {
+                        if ((event.getX() - initialX) > 0) {
+                            //save on favorites
+                        }
+                        getRandomRestaurant(jsonArray);
+                    }
+                    updateView = false;
+
+                }
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    initialX = event.getX();
+                }
+
+                return false;
+            }
+        };
+
+        // attach the OnTouchListener to the image view
+        this.findViewById(android.R.id.content).getRootView().setOnTouchListener(mGestureListener);
+
         fetchRestaurants();
     }
 
@@ -120,7 +142,7 @@ public class RandomRestaurant extends AppCompatActivity {
             try {
                 JSONObject jsonObject = new JSONObject(params);
 
-                JSONArray jsonArray = jsonObject.getJSONArray("businesses");
+                jsonArray = jsonObject.getJSONArray("businesses");
 
                 numberOfRestaurants = jsonObject.getInt("total");
 
@@ -138,7 +160,16 @@ public class RandomRestaurant extends AppCompatActivity {
         int number = rand.nextInt(20);
 
         try {
-            Restaurant restaurant = new Restaurant(jsonArray.getJSONObject(number).get("name").toString());
+            String name = jsonArray.getJSONObject(number).get("name").toString();
+            JSONArray categoriesJsonArray = jsonArray.getJSONObject(number).getJSONArray("categories");
+            String[] categories = new String[categoriesJsonArray.length()];
+
+            for(int i = 0; i < categoriesJsonArray.length(); i++) {
+                categories[i] = categoriesJsonArray.getJSONArray(i).get(0).toString();
+            }
+
+            String image = jsonArray.getJSONObject(number).get("image_url").toString();
+            Restaurant restaurant = new Restaurant(name, categories, image);
 
             randomRestaurantView.presentRestaurant(restaurant);
         } catch (JSONException e) {
