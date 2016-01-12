@@ -1,5 +1,6 @@
 package com.anagrande.rapy;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +11,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,10 +65,13 @@ public class RandomRestaurant extends AppCompatActivity {
         etLocation.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                Log.d("sd", String.valueOf(event.getAction()) + String.valueOf(event.getKeyCode()));
                 if (event.getAction() == KeyEvent.ACTION_DOWN &&
                         event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                     location = etLocation.getText().toString();
                     fetchRestaurants();
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                     return true;
                 }
                 return false;
@@ -91,6 +97,7 @@ public class RandomRestaurant extends AppCompatActivity {
                     if(updateView) {
                         if ((event.getX() - initialX) > 0) {
                             //save on favorites
+                            Toast.makeText(getBaseContext(), "Added to favorites", Toast.LENGTH_SHORT).show();
                         }
                         getRandomRestaurant(jsonArray);
                     }
@@ -112,10 +119,6 @@ public class RandomRestaurant extends AppCompatActivity {
     }
 
     public void fetchRestaurants() {
-
-        //restaurantList = new ArrayList<>();
-
-        //restaurantAdapter = new RestaurantAdapter(this, android.R.layout.simple_list_item_1, restaurantList);
 
         DownloadData dd = new DownloadData();
         dd.execute();
