@@ -6,9 +6,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-/**
- * Created by sergioalmecijarodriguez on 11/21/15.
- */
+
 public class RandomRestaurantView {
 
     private View view;

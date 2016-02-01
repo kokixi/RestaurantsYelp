@@ -1,6 +1,7 @@
 package com.anagrande.rapy;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,8 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Random;
 
 
@@ -32,17 +31,17 @@ public class RandomRestaurant extends AppCompatActivity {
     private static final String CONSUMER_SECRET = "4lT1FMcM9ds5DZUUX0RlJSiwAGI";
     private static final String TOKEN_SECRET = "lbgyWftiGqIjPxtaqQPP8vWxiRM";
 
-    private ArrayList<Restaurant> restaurantList;
-    private RestaurantAdapter restaurantAdapter;
-
     private int numberOfRestaurants;
 
+    private Restaurant restaurant;
     private Random rand;
     private RandomRestaurantView randomRestaurantView;
     private EditText etLocation;
     private String location = "San Francisco";
 
     private GestureDetector gestureDetector;
+
+    private RestaurantsDBManager dbManager;
 
     private JSONArray jsonArray;
     float initialX = (float) 0.0;
@@ -97,6 +96,7 @@ public class RandomRestaurant extends AppCompatActivity {
                     if(updateView) {
                         if ((event.getX() - initialX) > 0) {
                             //save on favorites
+                            dbManager.addRestaurant(restaurant);
                             Toast.makeText(getBaseContext(), "Added to favorites", Toast.LENGTH_SHORT).show();
                         }
                         getRandomRestaurant(jsonArray);
@@ -114,6 +114,8 @@ public class RandomRestaurant extends AppCompatActivity {
 
         // attach the OnTouchListener to the image view
         this.findViewById(android.R.id.content).getRootView().setOnTouchListener(mGestureListener);
+
+        dbManager = new RestaurantsDBManager(this);
 
         fetchRestaurants();
     }
@@ -172,13 +174,18 @@ public class RandomRestaurant extends AppCompatActivity {
             }
 
             String image = jsonArray.getJSONObject(number).get("image_url").toString();
-            Restaurant restaurant = new Restaurant(name, categories, image);
+            restaurant = new Restaurant(name, categories, image);
 
             randomRestaurantView.presentRestaurant(restaurant);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void showFavorites(View v){
+        Intent favActivity = new Intent(this, FavoriteRestaurants.class);
+        startActivity(favActivity);
     }
 
     @Override
