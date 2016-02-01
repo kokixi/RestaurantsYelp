@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:layout_gravity="center_horizontal"
-        android:textSize="20dp"/>
+        android:textSize="20dp"
+        />
 
     <TextView
         android:id="@+id/tvCategory"
@@ -42,5 +43,11 @@
         android:layout_height="wrap_content"
         android:layout_margin="25dp"
         android:layout_gravity="right"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Favorites"
+        android:onClick="showFavorites"/>
 
 </LinearLayout>
